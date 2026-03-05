@@ -1,0 +1,37 @@
+# Dataset files (too large for git — download from Google Drive)
+*.csv
+*.json
+*.xlsx
+*.xls
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# Virtual environment
+venv/
+env/
+.env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+Thumbs.db
+.DS_Store
+desktop.ini
+
+# Byte-compiled
+*.pyc
+*.pyo
