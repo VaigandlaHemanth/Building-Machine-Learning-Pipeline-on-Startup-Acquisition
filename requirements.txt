@@ -1,0 +1,12 @@
+# Startup-acquisition ML pipeline
+# Python >= 3.9
+pandas
+numpy
+scikit-learn
+scipy
+category_encoders
+matplotlib
+seaborn
+
+# tests (offline, synthetic data)
+pytest>=7.0

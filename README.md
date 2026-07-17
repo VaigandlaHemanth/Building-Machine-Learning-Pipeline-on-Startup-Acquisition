@@ -64,13 +64,17 @@ The dataset contains **industry trends, investment insights, and individual comp
 ```
 Building-Machine-Learning-Pipeline-on-Startup-Acquisition/
 │
-├── README.md                                  # Official README (this file)
+├── README.md                                  # This file
 ├── PROJECT_DOCUMENTATION.md                   # Detailed technical documentation
-├── .gitignore                                 # Git ignore rules
+├── requirements.txt
 │
-├── Startup_Steps_Data_Preprocessing.ipynb     # Step 1: Data Preprocessing & Cleaning
-├── doing.ipynb                                # Step 2: Feature Engineering & EDA
-├── ML_Pipeline_on_Startup_Acquisition.ipynb   # Step 3: ML Pipeline (EDA, Encoding, Labeling)
+├── Startup_Steps_Data_Preprocessing.ipynb     # Step 1: cleaning & feature prep
+├── ML_Pipeline_on_Startup_Acquisition.ipynb   # Step 2: EDA + model training/eval
+│
+├── src/
+│   └── startup_pipeline.py                     # The sklearn training pipeline
+├── tests/
+│   └── test_pipeline.py                        # Offline unit tests (synthetic data)
 │
 └── companies.csv                              # Dataset (NOT tracked — download separately)
 ```
@@ -95,26 +99,24 @@ Raw Data (companies.csv)
               │
               ▼
 ┌─────────────────────────────┐
-│  2. FEATURE ENGINEERING     │  ← doing.ipynb
-│  & EXPLORATORY ANALYSIS     │
-│  • NaN threshold filtering  │
-│  • Label & One-hot encoding │
-│  • Correlation analysis     │
-│  • Feature selection        │
-│  • Visualizations           │
-└─────────────┬───────────────┘
-              │
-              ▼
-┌─────────────────────────────┐
-│  3. ML PIPELINE             │  ← ML_Pipeline_on_Startup_Acquisition.ipynb
-│  • Full EDA                 │
-│  • Missing data heatmap     │
-│  • Correlation heatmap      │
-│  • Outlier detection        │
-│  • Encoding techniques      │
-│  • Data labeling            │
+│  2. EDA + MODEL TRAINING    │  ← ML_Pipeline_on_Startup_Acquisition.ipynb
+│  • Missing-data & corr maps │
+│  • Outlier removal (numeric)│
+│  • sklearn Pipeline:        │
+│    impute → scale/one-hot   │
+│    (fit on train only)      │
+│  • LogReg + RandomForest    │
+│    (balanced class weights) │
+│  • accuracy / macro-F1 /    │
+│    confusion matrix         │
 └─────────────────────────────┘
+        │
+        ▼   src/startup_pipeline.py  (importable, unit-tested)
 ```
+
+The target is the dataset's real `status` column (operating / acquired /
+closed / ipo). Encoding, imputation, and scaling happen **inside** the sklearn
+`Pipeline`, fit on the training split only, so there is no train/test leakage.
 
 ## Getting Started
 
@@ -151,7 +153,7 @@ scipy
 
 3. **Install dependencies**:
    ```bash
-   pip install pandas numpy matplotlib seaborn scikit-learn category_encoders scipy
+   pip install -r requirements.txt
    ```
 
 4. **Download the dataset**:
@@ -163,26 +165,43 @@ scipy
 Run the notebooks in order:
 
 ```bash
-# Step 1: Data Preprocessing
+# Step 1: cleaning & feature prep
 jupyter notebook Startup_Steps_Data_Preprocessing.ipynb
 
-# Step 2: Feature Engineering & EDA
-jupyter notebook doing.ipynb
-
-# Step 3: ML Pipeline
+# Step 2: EDA + model training and evaluation
 jupyter notebook ML_Pipeline_on_Startup_Acquisition.ipynb
 ```
 
-Or open all notebooks in **VS Code** and run cells sequentially.
+Or train straight from the command line (no notebook needed):
+
+```bash
+python -m src.startup_pipeline --data companies.csv --target status
+```
+
+Run the offline unit tests (synthetic data — no dataset required):
+
+```bash
+pytest -q
+```
 
 ## Results
 
-- Successfully cleaned and preprocessed 44-column startup dataset
-- Engineered new features: `isClosed`, `age_in_days`, `founded_year`
-- Identified key features correlated with acquisition status via correlation analysis
-- Applied multiple encoding strategies (Label, One-Hot, Binary, Frequency, Target encoding)
-- Detected and removed outliers using IQR method and Z-score
-- Reduced feature space by dropping low-correlation columns (threshold < 0.009)
+Preprocessing and EDA:
+- Cleaned the 44-column Crunchbase export; engineered `age_in_days`, `founded_year`.
+- Correlation analysis and (numeric-only) z-score outlier removal.
+
+Modeling — predict `status` (operating / acquired / closed / ipo) with a
+leak-free sklearn Pipeline, comparing two balanced classifiers:
+
+| Model | Accuracy | Macro-F1 |
+|---|---|---|
+| Logistic Regression (baseline) | _fill from your run_ | _fill_ |
+| Random Forest | _fill from your run_ | _fill_ |
+
+> Run Step 2 (or `python -m src.startup_pipeline`) to generate these numbers,
+> then paste them here. **Macro-F1 is the honest headline** — the `status`
+> classes are imbalanced (mostly "operating"), so raw accuracy is inflated by
+> the majority class.
 
 ## Technologies Used
 
